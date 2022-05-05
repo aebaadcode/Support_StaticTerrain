@@ -18,7 +18,7 @@ Enable the addon ingame and once loaded, use these commands to spawn/manipulate 
 (reference is anything you want except duplicates, fileName is the terrainGroup name aka the .dts model name)
 For example, to create the Test3 terrain you'd do this:
 
-<img src="https://user-images.githubusercontent.com/27306442/167013480-c418ad1c-15c6-4c80-8f96-d4ce035b3299.png" width="800" height="400">
+<img src="https://user-images.githubusercontent.com/27306442/167013480-c418ad1c-15c6-4c80-8f96-d4ce035b3299.png" width="800" height="500">
 
 Using the commands listed above you can rotate (sadly breaks non-straight collisions), reskin, resize (also breaks collisions :P), move, bring terrain to player, even color it (works only on terrains that support reskins - /skinterrain NAME blank and then /colorterrain NAME X X X X)
 (if you have many terrains and intend on moving or removing them at once you can input ALL into a terrain command instead of a single reference)
