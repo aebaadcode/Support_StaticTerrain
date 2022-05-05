@@ -1,6 +1,14 @@
 # What is static terrain?
 A support script which allows **YOU** the player to easily create (fake) terrains as well as interiors for a little known game named Blockland.
 
+The idea was to bring back what cannot be simply built of out bricks.
+These have ideal collision (tsstatics work better than bricks at stopping cars + they're scale 0.5 to ensure perfection) for driving and skiing.
+
+<img src="https://user-images.githubusercontent.com/27306442/167024874-cc7357a8-cb59-4a39-9be6-d52ec56397db.png" width="800" height="500">
+<img src="https://user-images.githubusercontent.com/27306442/167025040-0a828350-16c5-4779-9ebb-7bb3f8a53380.png" width="800" height="500">
+<img src="https://user-images.githubusercontent.com/27306442/167024953-0f497a63-92b7-4570-89b4-7d761c3071b1.png" width="800" height="500">
+(all terrains shown are for testing, if these look ugly to you then worry not, the final ones will look much better :P)
+
 # What is the state of this project?
 Currently the project is in a funny place as we're limited by the engine and its collsion methods (convex meshes only, benchmarks have shown more than 2000 collisions start to lag both the server and client terribly) and sadly no default performance optimizations exist.
 ### tldr: we're in need of a fancy dll that'd make a breakthrough in performance otherwise we're stuck with small scale low detail terrains
