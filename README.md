@@ -7,6 +7,7 @@ These have ideal collision (tsstatics work better than bricks at stopping cars +
 <img src="https://user-images.githubusercontent.com/27306442/167024874-cc7357a8-cb59-4a39-9be6-d52ec56397db.png" width="800" height="500">
 <img src="https://user-images.githubusercontent.com/27306442/167025040-0a828350-16c5-4779-9ebb-7bb3f8a53380.png" width="800" height="500">
 <img src="https://user-images.githubusercontent.com/27306442/167024953-0f497a63-92b7-4570-89b4-7d761c3071b1.png" width="800" height="500">
+<img src="https://user-images.githubusercontent.com/27306442/167025895-257ffa27-2e52-4d18-9fb7-a405e619ad00.png" width="800" height="500">
 (all terrains shown are for testing, if these look ugly to you then worry not, the final ones will look much better :P)
 
 # What is the state of this project?
