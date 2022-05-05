@@ -23,6 +23,15 @@ For example, to create the Test3 terrain you'd do this:
 Using the commands listed above you can rotate (sadly breaks non-straight collisions), reskin, resize (also breaks collisions :P), move, bring terrain to player, even color it (works only on terrains that support reskins - /skinterrain NAME blank and then /colorterrain NAME X X X X)
 (if you have many terrains and intend on moving or removing them at once you can input ALL into a terrain command instead of a single reference)
 
+# Currently available terrains in the mod
+* background (30x30 resolution, supports reskins)
+* cube (800 cube collisions, used for testing, DONT USE)
+* cube8 (100 x 8 cube collisions, used for testing, DONT USE)
+* test2 (first island, 30x30 resolution, somehow broke collision accuracy throughout dev, supports reskins)
+* test3 (second island made by meister, 35x35 resolution)
+* tent (port from v20)
+* milbase (port from v20)
+
 # Credits
 * aebaadcode (project organization + porting v20 assets/modeling awesome terrain + extensive debugging of loving terrain)
 * Monoblaster (datablock generator + entire command interface)
