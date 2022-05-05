@@ -1,0 +1,43 @@
+TERRAIN EXPLANATION AND TUTORIAL VIDEO
+1. the difference between static shapes and tsstatics 
+-static shapes work with shaders, are laggy, and use datablocks
+-tssatics don't work with shaders, can cast shadows but cannot have shadows cast upon them, good performance, and dont use datablocks
+meaning u can have awesome terrain and all your favorite mods enabled at the same time
+
+2. terrain is made from a terrain set aka 1 static shape for visual and X tsstatics for collision 
+-the static shape is used for visuals as it works with shaders
+-since tsstatics arent datablocks we use the extraresource script to force clients to download them
+ 
+3. why the terrain is made up off lotsa cubes
+-cubes are an awesome shape and work pretty well - source uses them for displacements
+-cylinders have been attempted but are an akward shape to work with and cause triangular artificats at hill bottoms more often than cubes (3kb instead of 2kb)
+-it is unfortunate but collisions must be not only convex but also seperated into their own dts files + scaled by 0.5 for best accuracy
+-part of the reason why the og static maps were terrible with vehicles is wrapperup had all the collisions in one file
+
+3. the fake texture blending on terrain
+-a 2048x2048 resolution png texture is used to cover the entire map and texture brushed in blender
+to create an illusion of it being texture blended like v20
+-detail maps do not work for whatever reason so we're stuck with blurry textures
+-2048 resolution is used since mip maps dont allow us to go higher (game wont load higher res png and will crash if higher res jpg is used)
+-mip maps are important because they sell the v20 look, disabling them gives you an ugly grainy look on the textures from a distance
+-using higher resolution textures (can go up to 4k i think) requires disabling of mip maps which causes the aformentioned effect (very bad i will kill u!!)
+
+4. some terrain limitations we have to cope with
+-you cannot make loopable terrain since you'll eventually have too many tsstatics spawned at once
+-the sacrafice was either having lotsa separate collisions so vehicles work correctly or have everything in one file and because of this
+og static maps literally have vehicles like skis instantly falling through the ground - vehicles or no vehicles (spoiler: we chose vehicles :P)
+-you cannot have distance based lod like on real terrain - the terrain is always rendered in high quality (bad for performance)
+and collisions are always being calculated (no current partical method to load/unload specific collisions when needed though buddy has been experimenting)
+-since you must have all collisions active at all times, porting maps like slopes is literally impossible unless you want 1 fps gameplay and 
+10k files to download :P
+
+5. some terrain limitations we have to work with
+-performance - even with the collisions hidden your blockland can only calculate so much tsstatics at once, 30x30 gives you awesome fps, 
+35x35 gives you good fps, and anything higher than that is only going to fuck over lower end users - for testing purposes i tried 50x50 res 
+and got a consistent 17 fps max :P 
+-player patience - often overlooked but especially makes me paranoid when choosing terrain res - when a player joins a server and sees 5000 files,
+they're just gonna instantly disconnect - nobody wants to download that many fucking files, you gotta be crazy dedicated to make it
+ive had people baby rage with 30x30 terrain (900 files) that there is too many to download so, keep that mind
+the cube collisions are 2kb each (3kb if using 6 sided cylinders) so the download isn't terribly slow, it's just the file count that looks intimidating
+
+
