@@ -25,7 +25,7 @@ Enable the addon ingame and once loaded, use these commands to spawn/manipulate 
 <img src="https://user-images.githubusercontent.com/27306442/167013178-5a4540e6-92ef-409c-8140-7f0259cd811e.png" width="400" height="350">
 
 (reference is anything you want except duplicates, fileName is the terrainGroup name aka the .dts model name)
-For example, to create the Test3 terrain you'd do this:
+For example, to create the Test3 terrain you'd do /maketerrain Test3 Test3
 
 <img src="https://user-images.githubusercontent.com/27306442/167013480-c418ad1c-15c6-4c80-8f96-d4ce035b3299.png" width="800" height="500">
 
@@ -47,6 +47,7 @@ Using the commands listed above you can rotate (sadly breaks non-straight collis
 * Conan (blender bulk collision export script + code help)
 * Buddy (additional optimizations)
 * Oxy (debugging and additions to command framework)
+* Der_Meister (making the test3 terrain)
 * Queuenard (debugging and big help with research)
 * Tendon (discovering the effectiveness of tsstatics)
 * Port (extra resource support)
