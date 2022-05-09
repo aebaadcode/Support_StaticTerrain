@@ -40,6 +40,7 @@ Using the commands listed above you can rotate (sadly breaks non-straight collis
 * test3 (second island made by meister, 35x35 resolution)
 * tent (port from v20)
 * milbase (port from v20)
+* convextest (15x15 resolution, loopable, supports reskins)
 
 # Credits
 * aebaadcode (project organization + porting v20 assets/modeling awesome terrain + extensive debugging of loving terrain)
