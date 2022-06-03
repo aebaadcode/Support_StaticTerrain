@@ -316,7 +316,7 @@ function serverCmdSetMoveTerrain(%client,%reference,%x,%y,%z)
     }
     else if($StaticTerrain::CommandTerrainisMade[%reference])
     {
-        %setPos = %x SPC %y SPC %z;
+        %setPos = trim(%x SPC %y SPC %z);
         %terrainPos = $StaticTerrain::CommandTerrainObject[%reference].getPosition();
         %relMove = vectorSub(%setPos,%terrainPos);
         serverCmdMoveTerrain(%client,%reference,getWord(%relMove,0),getWord(%relMove,1),getWord(%relMove,2));
@@ -409,6 +409,7 @@ function serverCmdColorTerrain(%client,%reference,%r,%g,%b,%a)
         %a = mClampF(%a, 0, 1);
 
         $StaticTerrain::CommandTerrainObject[%reference].setNodeColor("ALL", %col SPC %a);
+		$StaticTerrain::CommandTerrainObject[%reference].currNodeColor = %col SPC %a;
 
         if(%a < 1.0)
             $StaticTerrain::CommandTerrainObject[%reference].startFade(1,0,1);
@@ -534,6 +535,7 @@ function serverCmdDeleteTerrain(%client,%reference)
 	}
 	else if($StaticTerrain::CommandTerrainisMade[%reference])
 	{
+		serverCmdRemoveLoopTerrain(%client,%reference);
 		deleteTerrainChunk($StaticTerrain::CommandTerrainObject[%reference]);
 		$StaticTerrain::CommandTerrainObject[%reference] = "";
 		$StaticTerrain::CommandTerrainisMade[%reference] = false;
@@ -542,6 +544,223 @@ function serverCmdDeleteTerrain(%client,%reference)
 	{
 		%client.chatMessage("Invalid reference name");
 	}
+}
+
+addAddTerrainCommand("LoopTerrain", "reference rows columns");
+function serverCmdLoopTerrain(%client,%reference,%x,%y)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+
+	if(%reference $= "ALL")
+	{
+		%count = CommandTerrainSet.getCount();
+		for(%i = %count - 1; %i >= 0; %i--)
+		{
+			serverCmdLoopTerrain(%client,CommandTerrainSet.getObject(%i).reference,%x,%y);
+		}
+	}
+	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	{
+		%terrain = $StaticTerrain::CommandTerrainObject[%reference];
+		//get size of this terrain
+		%worldBox = %terrain.getWorldBox();
+		%lowerBound = getWords(%worldBox,0,2);
+		%upperBound = getWords(%worldBox,3);
+
+		%zeroRelativeBound = vectorSub(%upperBound,%lowerBound);
+
+		//make a group for the looped terrain
+		if(!isObject(%terrain.loopTerrain))
+		{
+			%terrain.loopTerrain = createTerrainSet();
+		}
+		%loopTerrain = %terrain.loopTerrain;
+
+		if(%loopTerrain.objectSet.getCount() > 0)
+		{
+			serverCmdRemoveLoopTerrain(%client,%reference);
+		}
+
+		//get attributes of the parent terrain
+		%skinName = %terrain.getSkinName();
+		%nodeColor = %terrain.currNodeColor;
+
+		//make the looped terrain
+		%startPosition = %terrain.getPosition();
+		%dataBlock = %terrain.getDataBlock();
+		for(%ix = 0; %ix < %x; %ix++)
+		{
+			for(%iy = 0; %iy < %y; %iy++)
+			{
+				//skip initial spot
+				if(%ix != 0 || %iy != 0)
+				{
+					%newX = getWord(%startPosition,0) + getWord(%zeroRelativeBound,0) * %ix;
+					%newY = getWord(%startPosition,1) + getWord(%zeroRelativeBound,1) * %iy;
+					%newPosition = %newX SPC %newY SPC getWord(%startPosition,2);
+
+					%newTerrain = %loopTerrain.createShape(%dataBlock,%newPosition);
+					if(%skinName !$= "")
+					{	
+						%newTerrain.setSkinName(%skinName);
+					}
+					
+					if(%nodeColor !$= "")
+					{
+						%newTerrain.setNodeColor("ALL",%nodeColor);
+					}
+				}
+			}
+		}
+
+		%terrain.loopx = %x;
+		%terrain.loopy = %y;
+	}
+	else
+	{
+		%client.chatMessage("Invalid reference name");
+	}
+}
+
+addAddTerrainCommand("RemoveLoopTerrain", "reference");
+function serverCmdRemoveLoopTerrain(%client,%reference,%x,%y)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+
+	if(%reference $= "ALL")
+	{
+		%count = CommandTerrainSet.getCount();
+		for(%i = %count - 1; %i >= 0; %i--)
+		{
+			serverCmdRemoveLoopTerrain(%client,CommandTerrainSet.getObject(%i).reference);
+		}
+	}
+	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	{
+		%terrain = $StaticTerrain::CommandTerrainObject[%reference];
+		%loopSet = %terrain.loopTerrain.objectSet;
+		if(!isObject(%loopSet))
+		{
+			return;
+		}
+
+		%count = %loopSet.getCount();
+		for(%i = %count - 1; %i >= 0; %i--)
+		{
+			deleteTerrainChunk(%loopSet.getObject(%i));
+		}
+
+		%terrain.loopx = 0;
+		%terrain.loopy = 0;
+	}
+	else
+	{
+		%client.chatMessage("Invalid reference name");
+	}
+}
+
+$Terrain::SaveLocation = "config/server/TerrainSaves/";
+
+addAddTerrainCommand("SaveTerrain","filename");
+function serverCmdSaveTerrain(%client,%filename)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+
+	%filename = getSafeVariableName(%fileName);
+
+	%file = new FileObject();
+	%success = %file.openForWrite($Terrain::SaveLocation @ %fileName @ ".txt");
+	if(%success)
+	{
+		%client.chatMessage("\c6Saving file \c3" @ $Terrain::SaveLocation @ %fileName @ ".txt");
+		//loop through the command terrain group and serialize string them then write them as a line
+		//datablock TAB reference TAB position TAB scale TAB rotation TAB skin TAB color TAB loopx TAB loopy
+		%group = CommandTerrainSet;
+		%count = CommandTerrainSet.getCount();
+		for(%i = 0; %i < %count; %i++)
+		{
+			%curr = CommandTerrainSet.getObject(%i);
+
+			%datablock = %curr.getDatablock().getName();
+			%datablock = getSubStr(%datablock,0,strStr(%dataBlock,"Shape"));
+			%reference = %curr.reference;
+			%position = %curr.getPosition();
+			%scale = %curr.getScale();
+			%rotation = %curr.rotation;
+			%skin = %curr.getSkinName();
+			%color = %curr.currNodeColor;
+			%loopx = %curr.loopx;
+			%loopy = %curr.loopy;
+
+			%file.writeLine(%dataBlock TAB %reference TAB %position TAB %scale TAB %rotation TAB %skin TAB %color TAB %loopx TAB %loopy);
+		}
+	}
+	else
+	{
+		%client.chatMessage("Failed to open file \c3" @ $Terrain::SaveLocation @ %fileName @ ".txt");
+	}
+
+	%file.close();
+	%file.delete();
+}
+
+addAddTerrainCommand("LoadTerrain","filename");
+function serverCmdLoadTerrain(%client,%filename)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+
+	%filename = getSafeVariableName(%fileName);
+
+	%file = new FileObject();
+	%success = %file.openForRead($Terrain::SaveLocation @ %fileName @ ".txt");
+	if(%success)
+	{
+		%client.chatMessage("\c6Loading file \c3" @ $Terrain::SaveLocation @ %fileName @ ".txt");
+		//loop through and read lines creating terrain in the process
+		//datablock TAB reference TAB position TAB scale TAB rotation TAB skin TAB color TAB loopx TAB loopy
+		while(!%file.isEOF())
+		{
+			%line = %file.readLine();
+
+			%c = -1;
+			%datablock = getField(%line,%c++);
+			%reference = getField(%line,%c++);
+			%position = getField(%line,%c++);
+			%scale = getField(%line,%c++);
+			%rotation = getField(%line,%c++);
+			%skin = getField(%line,%c++);
+			%color = getField(%line,%c++);
+			%loopx = getField(%line,%c++);
+			%loopy = getField(%line,%c++);
+
+			serverCmdMakeTerrain(%client,%reference,%dataBlock);
+			serverCmdSetMoveTerrain(%client,%reference,%position);
+			serverCmdScaleTerrain(%client,%reference,%scale);
+			rotateTerrainChunk($StaticTerrain::CommandTerrainObject[%reference], getWords(%rotation,0,2) SPC getWord(%rotation,3) * ($PI / 180));
+			serverCmdSkinTerrain(%client,%reference,%skin);
+			serverCmdColorTerrain(%client,%reference,%color);
+			serverCmdLoopTerrain(%client,%reference,%loopx,%loopy);
+		}
+	}
+	else
+	{
+		%client.chatMessage("Failed to open file \c3" @ $Terrain::SaveLocation @ %fileName @ ".txt");
+	}
+
+	%file.close();
+	%file.delete();
 }
 
 function serverCmdRemoveTerrain(%c,%r) { return serverCmdDeleteTerrain(%c,%r); }
@@ -580,7 +799,7 @@ function serverCmdListTerrainReferences(%client)
 	%count = CommandTerrainSet.getCount();
 	for(%i = 0; %i < %count; %i++)
 	{
-		%obj = commandTerrainSet.getObject(0);
+		%obj = commandTerrainSet.getObject(%i);
 		%name = %obj.reference;
 
 		%shapeName = %obj.getDatablock().getName();
