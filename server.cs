@@ -818,3 +818,28 @@ function serverCmdListTerrainReferences(%client)
 		%client.chatMessage("\c0" @ %name @ "\c6,\c1" SPC %shapeName @ "\c6,\c2" SPC %skinName @ "\c6,\c3" SPC %scale  @ "\c6,\c4" SPC %pos);
 	}
 }
+
+addAddTerrainCommand("TerrainDestroy");
+function serverCmdTerrainDestroy(%client)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+	
+    %group = MissionCleanup;
+    %count = %group.getCount();
+    for(%i = %count - 1; %i >= 0; %i--)
+    {
+        %obj = %group.getObject(%i);
+        if(%obj.getClassName() $= "TSStatic")
+        {
+            %obj.delete();
+        }
+
+        if(%obj.getClassName() $= "StaticShape")
+        {
+            %obj.delete();
+        }
+    }
+}
