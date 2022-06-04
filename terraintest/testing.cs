@@ -122,8 +122,8 @@ addExtraResource("Add-Ons/Support_StaticTerrain/cement.ground.png");
 addExtraResource("Add-Ons/Support_StaticTerrain/dirt.ground.png");
 addExtraResource("Add-Ons/Support_StaticTerrain/dirt2.ground.png");
 addExtraResource("Add-Ons/Support_StaticTerrain/realgrass.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/discord.terrain.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/funny.terrain.png");
+addExtraResource("Add-Ons/Support_StaticTerrain/african.mudshark.png");
+addExtraResource("Add-Ons/Support_StaticTerrain/kek.mudshark.png");
 
 generateTerrainDatablocks();
 
