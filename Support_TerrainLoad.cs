@@ -1,17 +1,8 @@
-// \new StaticShape(terraintest){datablock = visualshape;}; 
-// \terraintest.setScale("10 10 10");
-// \terraintest.setScale("0.5 0.5 0.5");
-// \terraintest.setSkinName("skin");
-// \terraintest.setNodeColor("ALL", "1 1 1 1"); \terraintest.startFade(1,0,1); TO FIX TRANSPARENCY
-//terraintest.setTransform("0 0 0"); terraintest.setScale("0 0 0");
-
-// COLLISION TESTING
-
-$StaticTerrain::Folder = "Add-ons/Support_StaticTerrain/terraintest";
+$StaticTerrain::Folder = "Add-ons/Terrain_";
 //static shape datablock gen
 function generateTerrainDatablocks()
 {
-    %pattern = $StaticTerrain::Folder @ "/*.dts";
+    %pattern = $StaticTerrain::Folder @ "*.dts";
 
     %set = TerrainDatablockSet;
     if(isObject(%set))
@@ -34,14 +25,15 @@ function generateTerrainDatablocks()
         %datablockMaker = "datablock StaticShapeData(" @ %dataBlockName @ "){shapeFile = %file;dynamicType = $TypeMasks::TerrainObjectType;};";
 
         //did we just make a visual datablock or collision?
-        %path = filePath(%file);
-        if(%path $= $StaticTerrain::Folder)
+        %firstFolder = filePath(%file);
+        %firstFolder = getSubStr(%firstFolder,strLen(%firstFolder) - 3,3);
+        if(%firstFolder $= "vis")
         {
-		        eval(%datablockMaker);
+		    eval(%datablockMaker);
             //visual; add it to the set
             %set.add(%dataBlockName);
         }
-        else
+        else if(%firstFolder $= "col")
         {
             //check if it has "col_" in the name
             %colPos = strPos(%fileName,"col_");
@@ -50,8 +42,7 @@ function generateTerrainDatablocks()
                 //collision; add it to an array for later
                 %visualName = getSafeVariableName(getSubStr(%fileName,0,%colPos)) @ "Shape";
 
-								addExtraResource(%file);
-                                talk(%file);
+				addExtraResource(%file);
 				
                 %collision[%visualName,%collision[%visualName,"count"] + 0] = %file;
                 %collision[%visualName,"count"]++;
@@ -72,13 +63,22 @@ function generateTerrainDatablocks()
         
         //use the array we made earlier to add all the collision to this datablock
         %collisionCount = %collision[%visualName,"count"];
-        echo(%collisionCount SPC "count for" SPC %visualName);
         for(%j = 0; %j < %collisionCount; %j++)
         {
             %visualData.collisionShape[%j] = %collision[%visualName,%j];
         }
 
         %visualData.collisionShapeCount = %collisionCount;
+    }
+
+    //gather textures and add them to extreresource
+    %pattern = $StaticTerrain::Folder @ "*.png";
+    %file = findFirstFile(%pattern);
+    while(%file !$= "")
+    {
+        addExtraResource(%file);
+
+        %file = findNextFile(%pattern);
     }
 }
 
@@ -112,18 +112,7 @@ package ExtraResources
 		}
 	}
 };
-
 activatePackage(ExtraResources);
-
-addExtraResource("Add-Ons/Support_StaticTerrain/asphalt.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/board.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/brickTOP.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/cement.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/dirt.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/dirt2.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/realgrass.ground.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/african.mudshark.png");
-addExtraResource("Add-Ons/Support_StaticTerrain/kek.mudshark.png");
 
 generateTerrainDatablocks();
 

@@ -1,4 +1,4 @@
-exec("./terraintest/testing.cs");
+exec("./Support_TerrainLoad.cs");
 
 if (!isObject($MainTerrainSet))
 {
@@ -244,11 +244,10 @@ function serverCmdMakeTerrain(%client,%reference,%w1,%w2,%w3,%w4,%w5,%w6,%w7,%w8
 
 	if(isObject(%dataBlock))
 	{
-		if(!$StaticTerrain::CommandTerrainisMade[%reference])
+		if(!isObject($StaticTerrain::CommandTerrainObject[%reference]))
 		{
 			%obj = createTerrainSet().createShape(%datablock);
 			%obj.reference = %reference;
-			$StaticTerrain::CommandTerrainisMade[%reference] = true;
 			$StaticTerrain::CommandTerrainObject[%reference] = %obj;
 			CommandTerrainSet.add(%obj);
 		}
@@ -281,7 +280,7 @@ function serverCmdMoveTerrain(%client,%reference,%x,%y,%z)
 			serverCmdMoveTerrain(%client,CommandTerrainSet.getObject(%i).reference, %x, %y, %z);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		moveTerrainChunk($StaticTerrain::CommandTerrainObject[%reference], %x SPC %y SPC %z);
 	}
@@ -314,7 +313,7 @@ function serverCmdSetMoveTerrain(%client,%reference,%x,%y,%z)
             serverCmdSetMoveTerrain(%client,CommandTerrainSet.getObject(%i).reference,%x,%y,%z);
         }
     }
-    else if($StaticTerrain::CommandTerrainisMade[%reference])
+    else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
     {
         %setPos = trim(%x SPC %y SPC %z);
         %terrainPos = $StaticTerrain::CommandTerrainObject[%reference].getPosition();
@@ -343,7 +342,7 @@ function serverCmdrotateTerrain(%client,%reference,%rX, %rY, %rZ)
             serverCmdrotateTerrain(%client,CommandTerrainSet.getObject(%i).reference, %rX, %rY, %rZ);
         }
     }
-    else if($StaticTerrain::CommandTerrainisMade[%reference])
+    else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
     {
 			if(%rY $= "")
       	rotateTerrainChunk($StaticTerrain::CommandTerrainObject[%reference], %rX);
@@ -396,7 +395,7 @@ function serverCmdColorTerrain(%client,%reference,%r,%g,%b,%a)
             serverCmdColorTerrain(%client,CommandTerrainSet.getObject(%i).reference, %r, %g, %b, %a);
         }
     }
-    else if($StaticTerrain::CommandTerrainisMade[%reference])
+    else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
     {
         if(%a $= "")
             %a = 1;
@@ -444,7 +443,7 @@ function serverCmdBringTerrain(%client,%reference)
 			serverCmdBringTerrain(%client,CommandTerrainSet.getObject(%i).reference);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		%playerPos = %player.getPosition();
 		serverCmdSetMoveTerrain(%client,%reference,getWord(%playerPos,0),getWord(%playerPos,1),getWord(%playerPos,2));
@@ -471,7 +470,7 @@ function serverCmdScaleTerrain(%client,%reference,%x,%y,%z)
 			serverCmdScaleTerrain(%client,CommandTerrainSet.getObject(%i).reference, %x, %y, %z);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		//get old position and datablock
 		%pos = $StaticTerrain::CommandTerrainObject[%reference].getPosition();
@@ -507,7 +506,7 @@ function serverCmdSkinTerrain(%client,%reference,%skin)
 			serverCmdSkinTerrain(%client,CommandTerrainSet.getObject(%i).reference, %skin);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		$StaticTerrain::CommandTerrainObject[%reference].setSkinName(%skin);
 	}
@@ -533,12 +532,11 @@ function serverCmdDeleteTerrain(%client,%reference)
 			serverCmdDeleteTerrain(%client,CommandTerrainSet.getObject(%i).reference);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		serverCmdRemoveLoopTerrain(%client,%reference);
 		deleteTerrainChunk($StaticTerrain::CommandTerrainObject[%reference]);
 		$StaticTerrain::CommandTerrainObject[%reference] = "";
-		$StaticTerrain::CommandTerrainisMade[%reference] = false;
 	}
 	else
 	{
@@ -562,7 +560,7 @@ function serverCmdLoopTerrain(%client,%reference,%x,%y)
 			serverCmdLoopTerrain(%client,CommandTerrainSet.getObject(%i).reference,%x,%y);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		%terrain = $StaticTerrain::CommandTerrainObject[%reference];
 		//get size of this terrain
@@ -641,7 +639,7 @@ function serverCmdRemoveLoopTerrain(%client,%reference,%x,%y)
 			serverCmdRemoveLoopTerrain(%client,CommandTerrainSet.getObject(%i).reference);
 		}
 	}
-	else if($StaticTerrain::CommandTerrainisMade[%reference])
+	else if(isObject($StaticTerrain::CommandTerrainObject[%reference]))
 	{
 		%terrain = $StaticTerrain::CommandTerrainObject[%reference];
 		%loopSet = %terrain.loopTerrain.objectSet;
@@ -817,6 +815,57 @@ function serverCmdListTerrainReferences(%client)
 
 		%client.chatMessage("\c0" @ %name @ "\c6,\c1" SPC %shapeName @ "\c6,\c2" SPC %skinName @ "\c6,\c3" SPC %scale  @ "\c6,\c4" SPC %pos);
 	}
+}
+
+addAddTerrainCommand("ListTerrain");
+function serverCmdListTerrain(%client)
+{
+	if(!%client.isSuperAdmin)
+	{
+		return;
+	}
+	
+	%count = TerrainDatablockSet.getCount();
+	for(%i = 0; %i < %count; %i++)
+	{
+		%obj = TerrainDatablockSet.getObject(%i);
+
+		%name = %obj.getName();
+		%name = getSubStr(%name,0,strLen(%name) - 5);
+
+		%client.chatMessage("\c0" @ %name);
+	}
+}
+
+addAddTerrainCommand("ListTerrainSkin");
+function serverCmdListTerrainSkin(%client, %name)
+{
+    if(!%client.isSuperAdmin)
+    {
+        return;
+    }
+    
+    %dataBlock = %name @ "Shape";
+    if(isObject(%dataBlock))
+    {
+        %filepath = filePath(%dataBlock.shapeFile);
+        %filepath = getSubStr(%filepath,0,strLen(%filepath) - 3);
+        //look for .png files
+        %currFile = findFirstFile(%filePath @ "*.png");
+        while(isFile(%currFile))
+        {
+            %skinName = fileBase(%currFile);
+            %skinName = getSubStr(%skinName,0,strStr(%skinName,"."));
+
+            %client.chatMessage("\c0" @ %skinName);
+
+            %currFile = findNextFile(%filePath @ "*.png");
+        }
+    }
+    else
+    {
+        %client.chatMessage("Invalid terrain name");
+    }
 }
 
 addAddTerrainCommand("TerrainDestroy");
