@@ -2,7 +2,7 @@ $StaticTerrain::Folder = "Add-ons/Terrain_";
 //static shape datablock gen
 function generateTerrainDatablocks()
 {
-    %pattern = $StaticTerrain::Folder @ "*.dts";
+    %pattern = $StaticTerrain::Folder @ "*";
 
     %set = TerrainDatablockSet;
     if(isObject(%set))
@@ -18,34 +18,50 @@ function generateTerrainDatablocks()
     %file = findFirstFile(%pattern);
     while(%file !$= "")
     {
-        %fileName = fileBase(%file);
-        
-        //create a datablock for visuals
-        %dataBlockName = getSafeVariableName(%fileName) @ "Shape";
-        %datablockMaker = "datablock StaticShapeData(" @ %dataBlockName @ "){shapeFile = %file;dynamicType = $TypeMasks::TerrainObjectType;};";
-
-        //did we just make a visual datablock or collision?
-        %firstFolder = filePath(%file);
-        %firstFolder = getSubStr(%firstFolder,strLen(%firstFolder) - 3,3);
-        if(%firstFolder $= "vis")
+        %filePath = filePath(%file);
+        %addonFolder = getSubStr(%file,8,strLen(%file) - 8);
+        if(strstr(%addonFolder,"/") > 0)
         {
-		    eval(%datablockMaker);
-            //visual; add it to the set
-            %set.add(%dataBlockName);
+            %addonFolder = getSubStr(%addonFolder,0,strstr(%addonFolder,"/"));
         }
-        else if(%firstFolder $= "col")
+        
+        //check if it's from an enabled addon
+        if($AddOn__[%addonFolder])
         {
-            //check if it has "col_" in the name
-            %colPos = strPos(%fileName,"col_");
-            if(%colPos != -1)
+            %ext = fileExt(%file);
+            switch$(%ext)
             {
-                //collision; add it to an array for later
-                %visualName = getSafeVariableName(getSubStr(%fileName,0,%colPos)) @ "Shape";
+            case "dts":
+                %firstFolder = getSubStr(%filePath,strLen(%filePath) - 3,3);
+                if(%firstFolder $= "vis")
+                {
+                    //create a datablock for visuals
+                    %fileName = fileBase(%file);
+                    %dataBlockName = getSafeVariableName(%fileName) @ "Shape";
+                    %datablockMaker = "datablock StaticShapeData(" @ %dataBlockName @ "){shapeFile = %file;dynamicType = $TypeMasks::TerrainObjectType;};";
+                    eval(%datablockMaker);
 
-				addExtraResource(%file);
-				
-                %collision[%visualName,%collision[%visualName,"count"] + 0] = %file;
-                %collision[%visualName,"count"]++;
+                    //visual; add it to the set
+                    %set.add(%dataBlockName);
+                }
+                else if(%firstFolder $= "col")
+                {
+                    //check if it has "col_" in the name
+                    %colPos = strPos(%fileName,"col_");
+                    if(%colPos != -1)
+                    {
+                        //collision; add it to an array for later
+                        %visualName = getSafeVariableName(getSubStr(%fileName,0,%colPos)) @ "Shape";
+
+                        addExtraResource(%file);
+                        
+                        %collision[%visualName,%collision[%visualName,"count"] + 0] = %file;
+                        %collision[%visualName,"count"]++;
+                    }
+                    
+                }
+            case "png":
+                addExtraResource(%file);
             }
             
         }
@@ -69,16 +85,6 @@ function generateTerrainDatablocks()
         }
 
         %visualData.collisionShapeCount = %collisionCount;
-    }
-
-    //gather textures and add them to extreresource
-    %pattern = $StaticTerrain::Folder @ "*.png";
-    %file = findFirstFile(%pattern);
-    while(%file !$= "")
-    {
-        addExtraResource(%file);
-
-        %file = findNextFile(%pattern);
     }
 }
 
