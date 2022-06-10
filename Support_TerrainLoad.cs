@@ -24,23 +24,22 @@ function generateTerrainDatablocks()
         {
             %addonFolder = getSubStr(%addonFolder,0,strstr(%addonFolder,"/"));
         }
-        
+        //echo(%addonFolder);
         //check if it's from an enabled addon
-        if($AddOn__[%addonFolder])
+        if($AddOnLoaded__[getSafeVariableName(%addonFolder)])
         {
             %ext = fileExt(%file);
+            %fileName = fileBase(%file);
             switch$(%ext)
             {
-            case "dts":
+            case ".dts":
                 %firstFolder = getSubStr(%filePath,strLen(%filePath) - 3,3);
                 if(%firstFolder $= "vis")
                 {
                     //create a datablock for visuals
-                    %fileName = fileBase(%file);
                     %dataBlockName = getSafeVariableName(%fileName) @ "Shape";
                     %datablockMaker = "datablock StaticShapeData(" @ %dataBlockName @ "){shapeFile = %file;dynamicType = $TypeMasks::TerrainObjectType;};";
                     eval(%datablockMaker);
-
                     //visual; add it to the set
                     %set.add(%dataBlockName);
                 }
@@ -60,7 +59,7 @@ function generateTerrainDatablocks()
                     }
                     
                 }
-            case "png":
+            case ".png":
                 addExtraResource(%file);
             }
             
