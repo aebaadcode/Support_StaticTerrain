@@ -104,7 +104,7 @@ function TerrainSet::createShape(%terrainSet, %shape, %vec, %rot, %scale)
 	%transform = %position SPC %rot;
 	%terrainObj.setTransform(%transform);
 	%terrainObj.setScale(%scale);
-	%realScale = vectorScale(%scale, 0.5);
+	%realScale = vectorScale(%scale, 0.49999);
 
 	%terrainSet.objectSet.add(%terrainObj);
 
